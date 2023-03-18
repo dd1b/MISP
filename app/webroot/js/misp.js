@@ -11,7 +11,15 @@ if (!String.prototype.startsWith) {
     return this.indexOf(searchString, position) === position;
   };
 }
-
+function sanitizeHTML(input) {
+    const div = document.createElement('div');
+    div.innerHTML = input;
+    const scripts = div.getElementsByTagName('script');
+    for (let i = 0; i < scripts.length; i++) {
+      scripts[i].parentNode.removeChild(scripts[i]);
+    }
+    return div.innerHTML;
+  }
 function escapeHtml(unsafe) {
     if (typeof unsafe === "boolean" || typeof unsafe === "number") {
         return unsafe;
@@ -140,7 +148,7 @@ function delegatePopup(id) {
 function genericPopup(url, popupTarget, callback) {
     var $popupTarget = $(popupTarget);
     $.get(url, function(data) {
-        $popupTarget.html(data);
+        $popupTarget.html(escapeHtml(data));
         $popupTarget.fadeIn();
         var left = ($(window).width() / 2) - ($(popupTarget).width() / 2);
         $popupTarget.css({'left': left + 'px'});
@@ -242,7 +250,7 @@ function removeSighting(caller) {
             var org = "/" + $('#org_id').text();
             updateIndex(id, 'event');
             $.get(baseurl + "/sightings/listSightings/" + rawid + "/" + context + org, function(data) {
-                $("#sightingsData").html(data);
+                $("#sightingsData").html(escapeHtml(data));
             }).fail(xhrFailCallback);
         },
         complete:function() {
@@ -312,7 +320,7 @@ function toggleSetting(e, setting, id) {
         },
         complete:function() {
             $.get(replacementForm, function(data) {
-                $('#hiddenFormDiv').html(data);
+                $('#hiddenFormDiv').html(escapeHtml(data));
             }).fail(xhrFailCallback);
             $(".loading").hide();
             $("#confirmation_box").fadeOut();
@@ -1343,7 +1351,7 @@ function submitPopoverForm(context_id, referer, update_context_id, modal, popove
             if (referer === 'addSighting') {
                 updateIndex(update_context_id, 'event');
                 $.get(baseurl + "/sightings/listSightings/" + id + "/attribute", function(data) {
-                    $("#sightingsData").html(data);
+                    $("#sightingsData").html(escapeHtml(data));
                 }).fail(xhrFailCallback);
                 $('.sightingsToggle').removeClass('btn-primary').addClass('btn-inverse');
                 $('#sightingsListAllToggle').removeClass('btn-inverse').addClass('btn-primary');
@@ -4372,7 +4380,7 @@ $('#eventToggleButtons button').click(function() {
         var loadUrl = $(this).data('load-url');
         if (loadUrl) {
             $.get(loadUrl, function(data) {
-                $element.html(data);
+                $element.html(escapeHtml(data));
             }).fail(xhrFailCallback);
         }
     }
@@ -4478,7 +4486,7 @@ function closeScreenshot() {
 
 function loadSightingGraph(id, scope) {
     $.get(baseurl + "/sightings/viewSightings/" + id + "/" + scope, function(data) {
-        $("#sightingsData").html(data);
+        $("#sightingsData").html(escapeHtml(data));
     }).fail(xhrFailCallback)
 }
 
@@ -4769,7 +4777,7 @@ $(function() {
         var url = $(this).data('url');
         $.get(url, function(data) {
             var $popover = $('#popover_form');
-            $popover.html(data);
+            $popover.html(escapeHtml(data));
             openPopup($popover);
         }).fail(xhrFailCallback)
     });
